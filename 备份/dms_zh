@@ -1,0 +1,384 @@
+学期项目：文档管理系统
+一个用于在文件存储 (FileStore) 中归档文档的文档管理系统，具备自动 OCR（光学字符识别队列）、自动摘要生成（使用生成式 AI）、标签和全文搜索 (ElasticSearch) 功能。
+
+学期项目架构
+该项目遵循由 Docker Compose 编排的微服务架构。该系统由多个相互协作的组件构成，以提供文档管理功能。
+
+客户端
+Paperless Web UI (端口 80)
+Web 服务器 (Nginx)
+
+Web UI
+
+Paperless REST API (端口 8081)
+Paperless Services (端口 8082)
+OCR 工作单元
+
+GenAI 工作单元
+
+RabbitMQ (端口 5672 + 9093 控制台)
+Ocr 队列
+
+结果队列
+
+PostgreSQL (端口 5432)
+Adminer 数据库管理 (端口 9091 控制台)
+MinIO (端口 9000 + 9090 控制台)
+Elasticsearch (端口 9200)
+Google Gemini
+所有服务都已容器化并通过 docker-compose.yml 进行管理，为开发和部署创建了一个自包含的环境。
+
+这个项目主要是实现 Paperless Web UI 与 Paperless REST API、Paperless Services，完成它们与 RabbitMQ、PostgreSQL、Elasticsearch、MinIO 的交互。
+
+用例
+上传文档
+
+自动执行 OCR
+
+在 Elasticsearch 中为全文搜索建立索引
+
+自动生成摘要
+
+搜索文档
+
+在 Elasticsearch 中进行全文和模糊搜索
+
+管理文档
+
+更新、删除、元数据
+
+您额外定义的个人用例 (Sprint 6)
+
+自选主题
+
+必须包含额外的实体！
+
+技术栈
+.Net >= 8.0
+
+ASP.Net
+
+两者均需
+
+Docker (桌面版)
+
+RabbitMQ
+
+PostgreSQL
+
+ElasticSearch
+
+生成式 AI (Google Gemini 或类似)
+
+Sprints (冲刺)
+Sprint 1: 项目设置、REST API、数据访问层 (带映射)
+C# 项目设置
+
+远程仓库设置，所有团队成员都能提交/推送
+
+REST 服务器已创建
+
+由团队定义的端点 (代码优先)
+
+集成 ORM 以将实体持久化到 PostgreSQL 数据库，使用仓库模式 (repository pattern)
+
+通过单元测试展示功能正确，模拟（mock）“生产”数据库
+
+初始的 docker-compose.yml，用于在容器内运行 REST 服务器和数据库
+
+Sprint 1: 任务
+提交日期: dd.mm.yyyy (见 Moodle 课程: „Submission – Sprint 1“)
+
+提交内容: 包含完整项目的 ZIP 压缩文件
+
+必须满足的检查标准:
+
+无构建错误
+
+服务器 (REST 和 PostgreSQL) 成功启动
+
+REST 端点功能正常，数据已持久化到数据库
+
+Sprint 2: (Web) 用户界面
+Web 服务器服务 (如 nginx 或其他) 已集成
+
+仪表盘和详情页面由 Web 服务器提供服务
+
+网页与 REST 服务器进行通信
+
+扩展 docker-compose.yml 以在额外的容器中运行 UI
+
+Sprint 2: 任务
+提交日期: dd.mm.yyyy (见 Moodle 课程: „Submission – Sprint 2“)
+
+提交内容: 包含完整项目的 ZIP 压缩文件
+
+必须满足的检查标准:
+
+无构建错误 (docker compose build)
+
+docker compose up 成功启动所有容器
+
+GET http://localhost/ 返回可正常运行的 paperless 前端
+
+Sprint 3: 队列集成 (RabbitMQ)
+扩展 docker-compose.yml 以在容器中运行 RabbitMQ
+
+将队列集成到 REST 服务器中
+
+在文档上传时，REST 服务器还应
+
+发送一条消息到 RabbitMQ
+
+该消息将由一个“空的”OCR 工作单元处理
+
+实现故障/异常处理 (使用特定于分层的异常)
+
+在重要/关键位置集成日志记录
+
+为期中代码审查做准备
+
+Sprint 3: 任务
+提交日期: dd.mm.yyyy (见 Moodle 课程: „Submission – Sprint 3“)
+
+提交内容: 包含完整项目的 ZIP 压缩文件
+
+必须满足的检查标准:
+
+无构建错误 (docker compose build)
+
+docker compose up 成功启动所有容器
+
+POST http://localhost/... 某个 PDF 文档
+
+将导致在工作单元服务中产生一条日志条目 (表示待 OCR 处理)
+
+Sprint 4: 工作单元服务 (OCR, MinIO)
+创建一个额外的应用程序来运行 OCR 服务
+
+集成 Tesseract for Ghostscript (或类似工具) 并使其工作，通过单元测试展示功能
+
+扩展 REST 服务器以将 PDF 文档存储在 MinIO 中
+
+实现 OCR 工作单元服务以
+
+从队列中检索消息 (由 REST 服务器在文档上传时发送)，
+
+从 MinIO 获取原始 PDF 文档
+
+执行 OCR 识别
+
+通过单元测试展示功能
+
+扩展 docker-compose.yml 以在容器中运行 MinIO 和 OCR 服务
+
+Sprint 4: 任务
+提交日期: dd.mm.yyyy (见 Moodle 课程: „Submission – Sprint 4“)
+
+提交内容: 包含完整项目的 ZIP 压缩文件
+
+必须满足的检查标准:
+
+无构建错误 (docker compose build)
+
+docker compose up 成功启动所有容器
+
+POST http://localhost/... 某个 PDF 文档
+
+将导致 PDF 存储在 MinIO 上
+
+将导致在 PaperlessService.OcrWorker 中产生日志输出 (说明 OCR 结果)
+
+Sprint 5: 生成式 AI 集成
+扩展 docker-compose.yml 以包含 GenAI 服务的配置
+
+添加一个新的 GenAI 工作单元服务
+
+在文档上传后，OCR 完成时：
+
+将提取的文本发送到 GenAI API (Google Gemini)
+
+接收摘要作为响应
+
+扩展 REST 服务器以将摘要存储在数据库中
+
+在关键位置集成日志记录
+
+妥善处理异常和 API 故障
+
+Sprint 5: 任务
+提交日期: dd.mm.yyyy (见 Moodle 课程: „Submission – Sprint 5“)
+
+提交内容: 包含完整项目的 ZIP 压缩文件
+
+必须满足的检查标准:
+
+无构建错误
+
+docker compose up 成功启动所有必需的容器，包括 PaperlessServices
+
+POST http://localhost:8080/ … 某个 PDF 文档
+
+将导致使用 GenAI 生成摘要
+
+将导致摘要存储在数据库中
+
+Sprint 6: Elasticsearch 集成，附加用例
+在工作单元服务中集成 Elasticsearch 并使其工作
+
+通过单元测试展示功能
+
+实现索引工作单元以
+
+将文本内容 (之前的 OCR 结果) 存储在 Elasticsearch 中
+
+通过单元测试展示功能
+
+在项目中实现“搜索文档”用例
+
+在项目中实现您的附加用例 (必须包含额外的实体)
+
+Sprint 6: 任务
+提交日期: dd.mm.yyyy (见 Moodle 课程: „Submission – Sprint 6“)
+
+提交内容: 包含完整项目的 ZIP 压缩文件
+
+必须满足的检查标准:
+
+无构建错误
+
+docker compose up 成功启动所有必需的容器
+
+HelloWorld.pdf 将通过 Paperless 前端 http://localhost/ 上传
+
+在 http://localhost/ 中执行搜索功能，搜索词为 “Hello”，结果应显示 HelloWorld.pdf 文档
+
+Sprint 7: 集成测试、批处理、最终确定
+通过集成测试展示“文档上传”用例的功能
+
+创建一个额外的应用程序来运行计划任务服务，该服务从输入文件夹中读取每日 XML 文件，通过批处理过程处理来自外部系统的访问日志。
+
+考虑如何将此类过程最好地集成到现有架构中。
+
+为访问统计信息定义一个合适的 XML 格式。
+
+扩展 PostgreSQL 数据库，以便存储每个文档的每日访问次数。
+
+实现批处理服务，使其可以被调度 (例如每天凌晨 01:00) 来检索和处理 XML 文件。确保输入文件夹和文件名模式是可配置的。
+
+提供一个示例 XML 文件来演示功能。
+
+确保处理过的 XML 文件被妥善存档或删除，以防止重复处理。
+
+项目最终确定
+
+为最终代码审查做准备
+
+Sprint 7: 任务
+提交日期: dd.mm.yyyy (见 Moodle 课程: „Submission – Sprint 7“)
+
+提交内容: 包含完整项目的 ZIP 压缩文件
+
+必须满足的检查标准:
+
+无构建错误
+
+docker compose up 成功启动所有必需的容器
+
+提供的集成测试 (在 README.md 中编写 HOWTO) 将被执行并应成功运行至结束。
+
+批处理过程必须成功读取示例 XML 文件，处理数据，并将其持久化到数据库中，如相关数据库查询所示。
+
+学期项目评分
+35% 持续的 Sprint 提交 (代码质量 + 完整性)
+
+每个 Sprint 递增计分
+
+例如 Sprint 3 = 当前的 Sprint 1, 当前的 Sprint 2, 当前的 Sprint 3
+
+有持续改进的机会
+
+提交的作业将被评分，并要求团队进行演示
+
+65% 代码审查 (代码质量 + 知识 + 完整性)
+
+30% 期中审查
+
+70% 期末审查
+
+所有部分必须都合格
+
+代码审查
+代码审查是对计算机源代码的系统性检查。它旨在发现和修复在初始开发阶段被忽略的错误，从而提高软件的整体质量和开发人员的技能。
+
+代码审查标准
+单元测试，代码覆盖率 (> 70%)
+
+REST 服务
+
+队列
+
+业务层与逻辑
+
+数据访问层
+
+实体与实体映射
+
+验证
+
+异常处理
+
+日志记录
+
+依赖注入
+
+服务代理
+
+用例的实现
+
+评分矩阵
+BIF5-SWEN3 学期项目/代码审查评分矩阵
+
+团队:
+
+学生:
+
+日期:
+
+标题	描述	最高分
+功能性需求 (20%):		
+用例	对用例的理解和实现	5
+REST API	服务层、转换器、服务代理的实现	5
+Web 前端	Web 前端的用户体验 (UX) 和功能完整性	5
+附加用例		5
+非功能性需求:		
+队列	组件间异步通信的实现	4
+日志记录	在所有组件/层中实现适当的日志记录	2
+验证	在所有层和组件中进行验证	2
+稳定性模式	实现异常处理、基于层的异常、稳定性模式	2
+单元测试	使用 Mocking 和适当覆盖率实现单元测试	4
+集成测试	用例和关键路径的端到端测试	4
+整洁代码	使用 SOLID 原则、整洁代码以实现高质量代码	2
+软件架构:		
+打包	使用容器进行打包和项目设置 (docker-compose, 配置正确)	10
+松耦合	接口的实现，松耦合	2
+映射器	层之间的映射，使用映射框架	2
+依赖注入	实现 DI，使用 DI 框架	2
+数据访问层 (DAL)	使用 ORM 和仓库模式 (可能还有工作单元模式) 实现持久化	2
+业务层 (BL)	业务层、实体、工作流、外观模式的实现	2
+软件开发工作流:		
+GitFlow	基于 GitFlow；使用分支；使用拉取请求 (pull-requests)	5
+问题跟踪	使用某种形式的问题跟踪，使用并更新看板 (kanban-board)	5
+CI/CD 流水线	使用某种 CI/CD 自动化 (例如 GitHub Action) 进行测试、代码检查等	5
+文档	解决方案的关键方面已文档化 (图表, README.md)	5
+代码审查 (提问):		
+知识	能够解释背景 (理论) 概念。了解代码中的为什么/如何/在哪里	20
+总计 (百分比):		100
+
+导出到 Google 表格
+备注:
+此处的得分是百分比形式，并将根据 Moodle 中代码审查的最高分数进行换算
+
+例如 期中代码审查 100% → 25分; 期末代码审查 100% → 40分
+
+如果任务未完全实现或源代码质量较低，您将获得该项目的部​​分分数

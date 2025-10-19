@@ -1,0 +1,96 @@
+### Test health endpoint
+GET http://localhost:8081/health
+
+### Get all documents
+GET http://localhost:8081/api/documents
+
+### Get all tags  
+GET http://localhost:8081/api/tags
+
+### Create a new tag
+POST http://localhost:8081/api/tags
+Content-Type: application/json
+
+{
+  "name": "Test Tag",
+  "description": "A test tag for development",
+  "color": "#ff5733"
+}
+
+### Get documents by ID
+GET http://localhost:8081/api/documents/1
+
+### Search documents
+GET http://localhost:8081/api/documents/search?query=test
+
+### Get recent documents
+GET http://localhost:8081/api/documents/recent?count=5
+
+### Upload a document (multipart form)
+POST http://localhost:8081/api/documents
+Content-Type: multipart/form-data; boundary=----WebKitFormBoundary7MA4YWxkTrZu0gW
+
+------WebKitFormBoundary7MA4YWxkTrZu0gW
+Content-Disposition: form-data; name="title"
+
+Test Document Upload
+------WebKitFormBoundary7MA4YWxkTrZu0gW
+Content-Disposition: form-data; name="file"; filename="test.pdf"
+Content-Type: application/pdf
+
+%PDF-1.4
+1 0 obj
+<<
+/Type /Catalog
+/Pages 2 0 R
+>>
+endobj
+2 0 obj
+<<
+/Type /Pages
+/Kids [3 0 R]
+/Count 1
+>>
+endobj
+3 0 obj
+<<
+/Type /Page
+/Parent 2 0 R
+/MediaBox [0 0 612 792]
+>>
+endobj
+xref
+0 4
+0000000000 65535 f 
+0000000009 00000 n 
+0000000058 00000 n 
+0000000115 00000 n 
+trailer
+<<
+/Size 4
+/Root 1 0 R
+>>
+startxref
+185
+%%EOF
+------WebKitFormBoundary7MA4YWxkTrZu0gW
+Content-Disposition: form-data; name="tagIds"
+
+1
+------WebKitFormBoundary7MA4YWxkTrZu0gW--
+
+### Update a document
+PUT http://localhost:8081/api/documents/1
+Content-Type: application/json
+
+{
+  "id": 1,
+  "title": "Updated Document Title",
+  "fileName": "updated.pdf",
+  "fileType": ".pdf",
+  "fileSize": 1024,
+  "uploadDate": "2024-01-01T00:00:00Z"
+}
+
+### Delete a document
+DELETE http://localhost:8081/api/documents/1
