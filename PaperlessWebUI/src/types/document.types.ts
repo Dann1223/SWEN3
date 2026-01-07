@@ -1,17 +1,27 @@
+export interface PaginatedResult<T> {
+  items: T[];
+  totalCount: number;
+  page: number;
+  pageSize: number;
+  totalPages: number;
+  hasMore: boolean;
+  isFirstPage: boolean;
+  isLastPage: boolean;
+}
+
 export interface Document {
   id: number;
   title: string;
   fileName: string;
-  filePath: string;
   uploadDate: string;
-  lastModified: string;
+  lastModified?: string;
   fileType: string;
   fileSize: number;
   ocrText?: string;
   summary?: string;
   isProcessed: boolean;
   isIndexed: boolean;
-  tags: Tag[];
+  tags?: Tag[];
 }
 
 export interface Tag {
@@ -45,8 +55,20 @@ export interface UpdateDocumentRequest {
 export interface DocumentSearchResult {
   documents: Document[];
   totalCount: number;
-  page: number;
-  pageSize: number;
+  searchTerm: string;
+  searchDuration: {
+    ticks: number;
+    days: number;
+    hours: number;
+    milliseconds: number;
+    minutes: number;
+    seconds: number;
+    totalDays: number;
+    totalHours: number;
+    totalMilliseconds: number;
+    totalMinutes: number;
+    totalSeconds: number;
+  };
 }
 
 export interface DocumentUploadResponse {

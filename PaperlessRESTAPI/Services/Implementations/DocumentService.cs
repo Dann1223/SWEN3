@@ -249,4 +249,33 @@ public class DocumentService : IDocumentService
             throw new DataException("Failed to retrieve recent documents");
         }
     }
+
+    public async Task<Stream?> GetFileStreamAsync(int documentId)
+    {
+        try
+        {
+            var document = await _documentRepository.GetByIdAsync(documentId);
+            if (document == null)
+            {
+                _logger.LogWarning("Document with ID {DocumentId} not found", documentId);
+                return null;
+            }
+
+            if (string.IsNullOrEmpty(document.FilePath))
+            {
+                _logger.LogWarning("Document {DocumentId} has no file path", documentId);
+                return null;
+            }
+
+            _logger.LogInformation("Downloading file for document {DocumentId} from path {FilePath}", documentId, document.FilePath);
+
+            // Get file from storage service (MinIO) using the correct file path
+            return await _storageService.DownloadFileAsync(document.FilePath);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error retrieving file stream for document {DocumentId}", documentId);
+            return null;
+        }
+    }
 }

@@ -1,9 +1,9 @@
 namespace PaperlessRESTAPI.Models.DTOs;
 
 /// <summary>
-/// Search result DTO containing documents and metadata
+/// Document search result DTO containing documents and metadata
 /// </summary>
-public class SearchResultDto
+public class DocumentSearchResultDto
 {
     public List<DocumentDto> Documents { get; set; } = new();
     public int TotalCount { get; set; }

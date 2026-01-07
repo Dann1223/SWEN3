@@ -24,15 +24,15 @@ public class MinIOService : IStorageService
     {
         try
         {
-            // Ensure bucket exists
-            await EnsureBucketExistsAsync();
-
-            // Generate unique file path
+            // Simple file path generation to avoid encoding issues
             var fileExtension = Path.GetExtension(fileName);
             var uniqueFileName = $"{Guid.NewGuid()}{fileExtension}";
             var filePath = $"documents/{DateTime.UtcNow:yyyy/MM/dd}/{uniqueFileName}";
 
             _logger.LogInformation("Uploading file {FileName} to MinIO at path {FilePath}", fileName, filePath);
+
+            // Ensure bucket exists
+            await EnsureBucketExistsAsync();
 
             var putObjectArgs = new PutObjectArgs()
                 .WithBucket(_config.BucketName)
@@ -42,7 +42,7 @@ public class MinIOService : IStorageService
                 .WithContentType(contentType)
                 .WithHeaders(new Dictionary<string, string>
                 {
-                    ["x-amz-meta-original-filename"] = fileName,
+                    ["x-amz-meta-original-filename"] = Convert.ToBase64String(System.Text.Encoding.UTF8.GetBytes(fileName)),
                     ["x-amz-meta-upload-date"] = DateTime.UtcNow.ToString("O")
                 });
 
@@ -65,15 +65,19 @@ public class MinIOService : IStorageService
             _logger.LogInformation("Downloading file from MinIO at path {FilePath}", filePath);
 
             var memoryStream = new MemoryStream();
+            
             var getObjectArgs = new GetObjectArgs()
                 .WithBucket(_config.BucketName)
                 .WithObject(filePath)
-                .WithCallbackStream(stream => stream.CopyTo(memoryStream));
+                .WithCallbackStream(async (stream) =>
+                {
+                    await stream.CopyToAsync(memoryStream);
+                });
 
             await _minioClient.GetObjectAsync(getObjectArgs);
             memoryStream.Position = 0;
 
-            _logger.LogInformation("Successfully downloaded file from MinIO at path {FilePath}", filePath);
+            _logger.LogInformation("Successfully downloaded file from MinIO at path {FilePath}, size: {Size} bytes", filePath, memoryStream.Length);
             return memoryStream;
         }
         catch (Exception ex)

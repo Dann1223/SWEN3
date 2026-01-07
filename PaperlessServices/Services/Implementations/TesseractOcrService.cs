@@ -11,7 +11,7 @@ public class TesseractOcrService : IOcrService
     public TesseractOcrService(ILogger<TesseractOcrService> logger, IConfiguration configuration)
     {
         _logger = logger;
-        _tessDataPath = configuration.GetValue<string>("Tesseract:DataPath") ?? "./tessdata";
+        _tessDataPath = configuration.GetSection("Tesseract:DataPath").Value ?? "./tessdata";
     }
 
     public async Task<string> ExtractTextAsync(Stream imageStream, string language = "eng")

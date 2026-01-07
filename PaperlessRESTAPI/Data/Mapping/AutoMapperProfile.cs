@@ -33,7 +33,7 @@ public class AutoMapperProfile : Profile
             .ForMember(dest => dest.FilePath, opt => opt.Ignore())
             .ForMember(dest => dest.UploadDate, opt => opt.MapFrom(src => DateTime.UtcNow))
             .ForMember(dest => dest.LastModified, opt => opt.Ignore())
-            .ForMember(dest => dest.OcrText, opt => opt.Ignore())
+            .ForMember(dest => dest.Content, opt => opt.Ignore())
             .ForMember(dest => dest.Summary, opt => opt.Ignore())
             .ForMember(dest => dest.IsProcessed, opt => opt.MapFrom(src => false))
             .ForMember(dest => dest.IsIndexed, opt => opt.MapFrom(src => false))

@@ -1,0 +1,144 @@
+# Document Comment and Search API Tests
+
+# Test comment endpoints
+@baseUrl = http://localhost:5062
+
+### Get all comments for a document (assuming document ID 1 exists)
+GET {{baseUrl}}/api/comments/document/1
+
+### Create a new comment
+POST {{baseUrl}}/api/comments
+Content-Type: application/json
+
+{
+  "documentId": 1,
+  "authorName": "Test User",
+  "content": "This is a test comment on the document. It contains important feedback about the content.",
+  "position": "page-1-paragraph-2"
+}
+
+### Create a reply to the comment (use the comment ID from the previous response)
+POST {{baseUrl}}/api/comments
+Content-Type: application/json
+
+{
+  "documentId": 1,
+  "authorName": "Another User",
+  "content": "I agree with your feedback. This is a reply to the comment above.",
+  "parentCommentId": 1
+}
+
+### Update a comment (use appropriate comment ID)
+PUT {{baseUrl}}/api/comments/1
+Content-Type: application/json
+
+{
+  "content": "This is an updated version of my original comment. I've added more details."
+}
+
+### Get comment statistics for a document
+GET {{baseUrl}}/api/comments/document/1/statistics
+
+### Get recent comments across all documents
+GET {{baseUrl}}/api/comments/recent?limit=10
+
+### Get replies to a specific comment
+GET {{baseUrl}}/api/comments/1/replies
+
+### Test Search Endpoints
+
+### Check search service health
+GET {{baseUrl}}/api/search/health
+
+### Create search index
+POST {{baseUrl}}/api/search/index/create
+
+### Search documents with basic query
+POST {{baseUrl}}/api/search/documents
+Content-Type: application/json
+
+{
+  "query": "test",
+  "page": 1,
+  "pageSize": 10,
+  "sortBy": "uploadDate",
+  "sortDirection": "desc",
+  "enableHighlight": true
+}
+
+### Search with filters
+POST {{baseUrl}}/api/search/documents
+Content-Type: application/json
+
+{
+  "query": "document",
+  "tags": ["Important"],
+  "fileTypes": ["pdf"],
+  "processedOnly": true,
+  "page": 1,
+  "pageSize": 20,
+  "enableHighlight": true
+}
+
+### Get search suggestions
+GET {{baseUrl}}/api/search/suggestions?query=doc&maxSuggestions=5
+
+### Get search aggregations
+GET {{baseUrl}}/api/search/aggregations
+
+### Get similar documents (use actual document ID)
+GET {{baseUrl}}/api/search/similar/1?maxResults=5
+
+### Rebuild search index
+POST {{baseUrl}}/api/search/index/rebuild
+
+### Test Tag Management
+
+### Create a new tag
+POST {{baseUrl}}/api/tags
+Content-Type: application/json
+
+{
+  "name": "Comments Test",
+  "description": "Tag for testing comment functionality",
+  "color": "#ff6b6b"
+}
+
+### Get all tags
+GET {{baseUrl}}/api/tags
+
+### Test Document Upload (for testing comments)
+
+### Upload a test document
+POST {{baseUrl}}/api/documents/upload
+Content-Type: multipart/form-data; boundary=----boundary
+
+------boundary
+Content-Disposition: form-data; name="file"; filename="test.txt"
+Content-Type: text/plain
+
+This is a test document for testing the comment functionality.
+It contains some sample content that can be used to test OCR and AI processing.
+
+The document has multiple paragraphs and should be indexed for search.
+------boundary
+Content-Disposition: form-data; name="title"
+
+Test Document for Comments
+------boundary
+Content-Disposition: form-data; name="tagIds"
+
+[1, 6]
+------boundary--
+
+### Get document details to verify upload
+GET {{baseUrl}}/api/documents/1
+
+### Get all documents
+GET {{baseUrl}}/api/documents?page=1&pageSize=10
+
+### Delete a comment (use appropriate comment ID)
+# DELETE {{baseUrl}}/api/comments/1
+
+### Delete search index (use with caution)
+# DELETE {{baseUrl}}/api/search/index

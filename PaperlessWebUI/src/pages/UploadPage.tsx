@@ -36,25 +36,20 @@ const UploadPage = () => {
   const uploadProps = {
     fileList,
     beforeUpload: (file: File) => {
-      // Validate file type
-      const isValidType = [
-        'application/pdf',
-        'image/jpeg',
-        'image/png',
-        'text/plain',
-        'application/msword',
-        'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
-      ].includes(file.type);
+      // Only support PDF files for reliable OCR processing
+      const validTypes = ['application/pdf'];
+      const validExtensions = ['.pdf'];
+      const fileExtension = file.name.toLowerCase().substring(file.name.lastIndexOf('.'));
 
-      if (!isValidType) {
-        message.error('Invalid file type. Please upload PDF, images, or documents.');
+      if (!validTypes.includes(file.type) && !validExtensions.includes(fileExtension)) {
+        message.error(`Only PDF files are supported. Selected file type: ${fileExtension}`);
         return false;
       }
 
-      // Validate file size (50MB)
-      const isLt50M = file.size / 1024 / 1024 < 50;
-      if (!isLt50M) {
-        message.error('File must be smaller than 50MB!');
+      // Validate file size (10MB limit to match backend)
+      const isLt10M = file.size / 1024 / 1024 < 10;
+      if (!isLt10M) {
+        message.error('File must be smaller than 10MB!');
         return false;
       }
 
@@ -79,7 +74,7 @@ const UploadPage = () => {
       <Card>
         <Form form={form} layout="vertical" onFinish={handleUpload}>
           <Form.Item name="title" label="Document Title">
-            <Input placeholder="Enter document title (optional)" />
+            <Input placeholder="Enter document title" required />
           </Form.Item>
 
           <Form.Item label="Select File" required>
@@ -88,10 +83,12 @@ const UploadPage = () => {
                 <InboxOutlined style={{ fontSize: 48, color: '#1890ff' }} />
               </p>
               <p className="ant-upload-text">
-                Click or drag file to this area to upload
+                Click or drag PDF file to this area to upload
               </p>
               <p className="ant-upload-hint">
-                Support PDF, Word documents, images, and text files. Maximum size: 50MB
+                Only PDF files are supported for reliable OCR text extraction
+                <br />
+                Maximum size: 10MB
               </p>
             </Dragger>
           </Form.Item>

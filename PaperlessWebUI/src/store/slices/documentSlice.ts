@@ -2,7 +2,6 @@ import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import type { PayloadAction } from '@reduxjs/toolkit';
 import { documentService } from '../../services/documentService';
 import type { Document } from '../../types/document.types';
-import type { SearchRequest } from '../../types/search.types';
 
 interface DocumentState {
   documents: Document[];
@@ -38,8 +37,14 @@ const initialState: DocumentState = {
 export const fetchDocuments = createAsyncThunk(
   'documents/fetchDocuments',
   async ({ page = 1, pageSize = 10 }: { page?: number; pageSize?: number } = {}) => {
-    const documents = await documentService.getAll(page, pageSize);
-    return { documents, page, pageSize };
+    const result = await documentService.getAll(page, pageSize);
+    return { 
+      documents: result.documents, 
+      totalCount: result.totalCount,
+      totalPages: result.totalPages,
+      page, 
+      pageSize 
+    };
   }
 );
 
@@ -70,8 +75,8 @@ export const uploadDocument = createAsyncThunk(
 
 export const searchDocuments = createAsyncThunk(
   'documents/searchDocuments',
-  async (request: SearchRequest) => {
-    return await documentService.search(request);
+  async (query: string) => {
+    return await documentService.search(query);
   }
 );
 
@@ -118,9 +123,10 @@ const documentSlice = createSlice({
         state.loading = false;
         state.documents = action.payload.documents;
         state.pagination = {
-          ...state.pagination,
           page: action.payload.page,
           pageSize: action.payload.pageSize,
+          totalCount: action.payload.totalCount,
+          totalPages: action.payload.totalPages,
         };
       })
       .addCase(fetchDocuments.rejected, (state, action) => {
@@ -167,10 +173,10 @@ const documentSlice = createSlice({
         state.loading = false;
         state.documents = action.payload.documents;
         state.pagination = {
-          page: action.payload.page,
-          pageSize: action.payload.pageSize,
+          page: 1,
+          pageSize: 20,
           totalCount: action.payload.totalCount,
-          totalPages: Math.ceil(action.payload.totalCount / action.payload.pageSize),
+          totalPages: Math.ceil(action.payload.totalCount / 20),
         };
       })
       .addCase(searchDocuments.rejected, (state, action) => {

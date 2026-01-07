@@ -8,6 +8,8 @@ public interface IUnitOfWork : IDisposable
     IDocumentRepository Documents { get; }
     IRepository<Entities.Tag> Tags { get; }
     IRepository<Entities.DocumentAccess> DocumentAccesses { get; }
+    IDailyDocumentAccessRepository DailyDocumentAccesses { get; }
+    IBatchProcessingHistoryRepository BatchProcessingHistories { get; }
 
     Task<int> SaveChangesAsync();
     Task BeginTransactionAsync();

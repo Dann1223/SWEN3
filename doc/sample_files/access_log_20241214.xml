@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<AccessLogReport version="1.0" date="2024-12-14" system="External-System-2">
+  
+  <!-- Previous day's data with different access patterns -->
+  <DocumentAccess documentId="1" fileName="technical_report_2024.pdf">
+    <ViewCount>12</ViewCount>
+    <DownloadCount>5</DownloadCount>
+    <SearchCount>2</SearchCount>
+    <TotalAccess>19</TotalAccess>
+  </DocumentAccess>
+
+  <DocumentAccess documentId="2" fileName="user_manual_v2.pdf">
+    <ViewCount>22</ViewCount>
+    <DownloadCount>9</DownloadCount>
+    <SearchCount>4</SearchCount>
+    <TotalAccess>35</TotalAccess>
+  </DocumentAccess>
+
+  <DocumentAccess documentId="6" fileName="quarterly_review.pdf">
+    <ViewCount>18</ViewCount>
+    <DownloadCount>7</DownloadCount>
+    <SearchCount>3</SearchCount>
+    <TotalAccess>28</TotalAccess>
+  </DocumentAccess>
+
+</AccessLogReport>

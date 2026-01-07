@@ -1,6 +1,6 @@
 import type { ReactNode } from 'react';
 import { Layout, Menu, Typography } from 'antd';
-import { FileTextOutlined, UploadOutlined, SearchOutlined, DashboardOutlined } from '@ant-design/icons';
+import { FileTextOutlined, UploadOutlined, SearchOutlined, DashboardOutlined, TagOutlined } from '@ant-design/icons';
 import { useNavigate, useLocation } from 'react-router-dom';
 
 const { Header, Sider, Content } = Layout;
@@ -34,6 +34,21 @@ const MainLayout = ({ children }: MainLayoutProps) => {
       key: '/search',
       icon: <SearchOutlined />,
       label: 'Search',
+      children: [
+        {
+          key: '/search',
+          label: 'Basic Search',
+        },
+        {
+          key: '/advanced-search',
+          label: 'Advanced Search',
+        },
+      ],
+    },
+    {
+      key: '/tags',
+      icon: <TagOutlined />,
+      label: 'Tags',
     },
   ];
 

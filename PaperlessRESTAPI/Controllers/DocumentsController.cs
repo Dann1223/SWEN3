@@ -16,35 +16,56 @@ public class DocumentsController : ControllerBase
 {
     private readonly IUnitOfWork _unitOfWork;
     private readonly IDocumentService _documentService;
+    private readonly IOcrResultService _ocrResultService;
     private readonly IMapper _mapper;
     private readonly ILogger<DocumentsController> _logger;
 
     public DocumentsController(
         IUnitOfWork unitOfWork,
         IDocumentService documentService,
+        IOcrResultService ocrResultService,
         IMapper mapper,
         ILogger<DocumentsController> logger)
     {
         _unitOfWork = unitOfWork;
         _documentService = documentService;
+        _ocrResultService = ocrResultService;
         _mapper = mapper;
         _logger = logger;
     }
 
     /// <summary>
-    /// Get all documents
+    /// Get all documents with pagination
     /// </summary>
     [HttpGet]
-    public async Task<ActionResult<IEnumerable<DocumentDto>>> GetDocuments()
+    public async Task<ActionResult<PaginatedResultDto<DocumentDto>>> GetDocuments(
+        [FromQuery] int page = 1, 
+        [FromQuery] int pageSize = 10)
     {
         try
         {
-            _logger.LogInformation("Retrieving all documents");
+            _logger.LogInformation("Retrieving documents - Page: {Page}, PageSize: {PageSize}", page, pageSize);
             
             var documents = await _unitOfWork.Documents.GetAllAsync();
-            var documentDtos = _mapper.Map<IEnumerable<DocumentDto>>(documents);
+            var totalCount = documents.Count();
             
-            return Ok(documentDtos);
+            var pagedDocuments = documents
+                .OrderByDescending(d => d.UploadDate)
+                .Skip((page - 1) * pageSize)
+                .Take(pageSize);
+            
+            var documentDtos = _mapper.Map<IEnumerable<DocumentDto>>(pagedDocuments);
+            
+            var result = new PaginatedResultDto<DocumentDto>
+            {
+                Items = documentDtos,
+                TotalCount = totalCount,
+                Page = page,
+                PageSize = pageSize,
+                TotalPages = (int)Math.Ceiling((double)totalCount / pageSize)
+            };
+            
+            return Ok(result);
         }
         catch (Exception ex)
         {
@@ -173,7 +194,7 @@ public class DocumentsController : ControllerBase
     /// Search documents
     /// </summary>
     [HttpGet("search")]
-    public async Task<ActionResult<SearchResultDto>> SearchDocuments([FromQuery] string query = "")
+    public async Task<ActionResult<DocumentSearchResultDto>> SearchDocuments([FromQuery] string query = "")
     {
         try
         {
@@ -185,7 +206,7 @@ public class DocumentsController : ControllerBase
 
             var documentDtos = _mapper.Map<IEnumerable<DocumentDto>>(documents);
             
-            var searchResult = new SearchResultDto
+            var searchResult = new DocumentSearchResultDto
             {
                 Documents = documentDtos.ToList(),
                 TotalCount = documentDtos.Count(),
@@ -222,5 +243,105 @@ public class DocumentsController : ControllerBase
             _logger.LogError(ex, "Error retrieving recent documents");
             return StatusCode(500, "Internal server error");
         }
+    }
+
+    /// <summary>
+    /// Get OCR processing status for a document
+    /// </summary>
+    [HttpGet("{id}/ocr-status")]
+    public async Task<ActionResult<OcrProcessingStatus>> GetOcrStatus(int id)
+    {
+        try
+        {
+            _logger.LogInformation("Getting OCR status for document {DocumentId}", id);
+
+            var status = await _ocrResultService.GetOcrProcessingStatusAsync(id);
+            return Ok(status);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error getting OCR status for document {DocumentId}", id);
+            return StatusCode(500, "Internal server error");
+        }
+    }
+
+    /// <summary>
+    /// Get OCR text for a document
+    /// </summary>
+    [HttpGet("{id}/ocr-text")]
+    public async Task<ActionResult<string>> GetOcrText(int id)
+    {
+        try
+        {
+            _logger.LogInformation("Getting OCR text for document {DocumentId}", id);
+
+            var document = await _unitOfWork.Documents.GetByIdAsync(id);
+            if (document == null)
+            {
+                return NotFound($"Document with ID {id} not found");
+            }
+
+            if (string.IsNullOrWhiteSpace(document.Content))
+            {
+                return Ok(new { text = "", processed = document.IsProcessed, message = "No OCR text available" });
+            }
+
+            return Ok(new { text = document.Content, processed = document.IsProcessed });
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error getting OCR text for document {DocumentId}", id);
+            return StatusCode(500, "Internal server error");
+        }
+    }
+
+    /// <summary>
+    /// Download document file
+    /// </summary>
+    [HttpGet("{id}/download")]
+    public async Task<IActionResult> DownloadDocument(int id)
+    {
+        try
+        {
+            _logger.LogInformation("Downloading document with ID: {DocumentId}", id);
+            
+            var document = await _unitOfWork.Documents.GetByIdAsync(id);
+            if (document == null)
+            {
+                return NotFound($"Document with ID {id} not found");
+            }
+
+            // Get file from storage service
+            var fileStream = await _documentService.GetFileStreamAsync(document.Id);
+            if (fileStream == null)
+            {
+                return NotFound("Document file not found in storage");
+            }
+
+            // Return file with proper content type and disposition
+            var contentType = GetContentType(document.FileName);
+            return File(fileStream, contentType, document.FileName);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error downloading document with ID: {DocumentId}", id);
+            return StatusCode(500, "Internal server error");
+        }
+    }
+
+    private static string GetContentType(string fileName)
+    {
+        var extension = Path.GetExtension(fileName).ToLowerInvariant();
+        return extension switch
+        {
+            ".pdf" => "application/pdf",
+            ".doc" => "application/msword",
+            ".docx" => "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+            ".txt" => "text/plain",
+            ".jpg" or ".jpeg" => "image/jpeg",
+            ".png" => "image/png",
+            ".gif" => "image/gif",
+            _ => "application/octet-stream"
+        };
     }
 }

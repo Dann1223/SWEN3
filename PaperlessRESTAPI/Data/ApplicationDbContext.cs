@@ -16,6 +16,9 @@ public class ApplicationDbContext : DbContext
     public DbSet<Document> Documents { get; set; }
     public DbSet<Tag> Tags { get; set; }
     public DbSet<DocumentAccess> DocumentAccesses { get; set; }
+    public DbSet<DocumentComment> DocumentComments { get; set; }
+    public DbSet<DailyDocumentAccess> DailyDocumentAccesses { get; set; }
+    public DbSet<BatchProcessingHistory> BatchProcessingHistories { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -27,7 +30,8 @@ public class ApplicationDbContext : DbContext
             entity.HasKey(e => e.Id);
             entity.Property(e => e.Id).ValueGeneratedOnAdd();
             
-            entity.HasIndex(e => e.FileName).IsUnique();
+            // Remove unique constraint on FileName to allow duplicate file names
+            entity.HasIndex(e => e.FileName);
             entity.HasIndex(e => e.UploadDate);
             entity.HasIndex(e => e.IsProcessed);
             entity.HasIndex(e => e.IsIndexed);
@@ -81,5 +85,52 @@ public class ApplicationDbContext : DbContext
             new Tag { Id = 4, Name = "Contract", Description = "Contract documents", Color = "#007bff" },
             new Tag { Id = 5, Name = "Report", Description = "Report documents", Color = "#fd7e14" }
         );
+
+        // Configure DocumentComment entity
+        modelBuilder.Entity<DocumentComment>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+            entity.Property(e => e.Id).ValueGeneratedOnAdd();
+            
+            entity.HasIndex(e => e.DocumentId);
+            entity.HasIndex(e => e.CreatedAt);
+
+            entity.HasOne(dc => dc.Document)
+                  .WithMany(d => d.Comments)
+                  .HasForeignKey(dc => dc.DocumentId)
+                  .OnDelete(DeleteBehavior.Cascade);
+
+            entity.HasOne(dc => dc.ParentComment)
+                  .WithMany(dc => dc.Replies)
+                  .HasForeignKey(dc => dc.ParentCommentId)
+                  .OnDelete(DeleteBehavior.Restrict);
+        });
+
+        // Configure DailyDocumentAccess entity
+        modelBuilder.Entity<DailyDocumentAccess>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+            entity.Property(e => e.Id).ValueGeneratedOnAdd();
+            
+            entity.HasIndex(e => new { e.DocumentId, e.AccessDate })
+                  .IsUnique();
+            entity.HasIndex(e => e.AccessDate);
+
+            entity.HasOne(dda => dda.Document)
+                  .WithMany()
+                  .HasForeignKey(dda => dda.DocumentId)
+                  .OnDelete(DeleteBehavior.Cascade);
+        });
+
+        // Configure BatchProcessingHistory entity
+        modelBuilder.Entity<BatchProcessingHistory>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+            entity.Property(e => e.Id).ValueGeneratedOnAdd();
+            
+            entity.HasIndex(e => e.FileName);
+            entity.HasIndex(e => e.ProcessedAt);
+            entity.HasIndex(e => e.IsSuccessful);
+        });
     }
 }

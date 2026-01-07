@@ -7,9 +7,8 @@ namespace PaperlessRESTAPI.Models.DTOs;
 /// </summary>
 public class UploadDocumentDto
 {
-    [Required]
     [MaxLength(255)]
-    public string Title { get; set; } = string.Empty;
+    public string? Title { get; set; }
 
     [Required]
     public IFormFile File { get; set; } = null!;

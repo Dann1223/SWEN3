@@ -24,7 +24,7 @@ public class DocumentRepository : Repository<Document>, IDocumentRepository
             .Where(d => 
                 d.Title.ToLower().Contains(lowerSearchTerm) ||
                 d.FileName.ToLower().Contains(lowerSearchTerm) ||
-                (d.OcrText != null && d.OcrText.ToLower().Contains(lowerSearchTerm)) ||
+                (d.Content != null && d.Content.ToLower().Contains(lowerSearchTerm)) ||
                 (d.Summary != null && d.Summary.ToLower().Contains(lowerSearchTerm)) ||
                 d.Tags.Any(t => t.Name.ToLower().Contains(lowerSearchTerm)))
             .OrderByDescending(d => d.UploadDate)

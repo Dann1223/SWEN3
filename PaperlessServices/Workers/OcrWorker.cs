@@ -12,6 +12,7 @@ public class OcrWorker : BackgroundService
     private readonly ILogger<OcrWorker> _logger;
     private readonly IConfiguration _configuration;
     private readonly IOcrService _ocrService;
+    private readonly IDocumentProcessingService _documentProcessingService;
     private readonly IStorageService _storageService;
     private IConnection? _connection;
     private IModel? _channel;
@@ -20,11 +21,13 @@ public class OcrWorker : BackgroundService
         ILogger<OcrWorker> logger, 
         IConfiguration configuration,
         IOcrService ocrService,
+        IDocumentProcessingService documentProcessingService,
         IStorageService storageService)
     {
         _logger = logger;
         _configuration = configuration;
         _ocrService = ocrService;
+        _documentProcessingService = documentProcessingService;
         _storageService = storageService;
     }
 
@@ -147,10 +150,20 @@ public class OcrWorker : BackgroundService
             _logger.LogInformation("Starting OCR processing for document {DocumentId}, file: {FileName}", 
                 message.DocumentId, message.FileName);
 
-            // Check if OCR service is available
+            // Check if the document type is supported
+            if (!_documentProcessingService.CanProcess(message.FileName))
+            {
+                throw new InvalidOperationException($"Unsupported file type: {message.FileType}");
+            }
+
+            var processingMethod = _documentProcessingService.GetProcessingMethod(message.FileName);
+            _logger.LogInformation("Using processing method: {ProcessingMethod} for file: {FileName}", 
+                processingMethod, message.FileName);
+
+            // Check if OCR service is available (still needed for image processing)
             if (!await _ocrService.IsAvailableAsync())
             {
-                throw new InvalidOperationException("OCR service is not available");
+                _logger.LogWarning("Tesseract OCR service is not available, but continuing with document processing");
             }
 
             // Check if file exists in storage
@@ -165,20 +178,31 @@ public class OcrWorker : BackgroundService
             _logger.LogInformation("Downloaded file {FileName} from storage, size: {Size} bytes", 
                 message.FileName, fileStream.Length);
 
-            // Perform OCR based on file type
-            string extractedText;
-            if (message.FileType.ToLowerInvariant() == ".pdf")
-            {
-                extractedText = await _ocrService.ExtractTextFromPdfAsync(fileStream);
-            }
-            else
-            {
-                extractedText = await _ocrService.ExtractTextAsync(fileStream);
-            }
+            // Use the smart document processing service
+            string extractedText = await _documentProcessingService.ExtractTextAsync(
+                fileStream, message.FileName, "eng");
 
-            // Get confidence score
-            fileStream.Position = 0; // Reset stream position
-            var confidence = await _ocrService.GetConfidenceScoreAsync(fileStream);
+            // Try to get confidence score for image-based processing
+            float confidence = 0.0f;
+            try
+            {
+                if (message.FileType.ToLowerInvariant() != ".pdf")
+                {
+                    fileStream.Position = 0; // Reset stream position
+                    confidence = await _ocrService.GetConfidenceScoreAsync(fileStream);
+                }
+                else
+                {
+                    // For PDF, set a default confidence based on text extraction success
+                    confidence = !string.IsNullOrWhiteSpace(extractedText) && 
+                               !extractedText.StartsWith("[") ? 0.95f : 0.0f;
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogWarning(ex, "Could not determine confidence score for document {DocumentId}", message.DocumentId);
+                confidence = 0.0f;
+            }
 
             result.ExtractedText = extractedText;
             result.Confidence = confidence;
@@ -188,8 +212,8 @@ public class OcrWorker : BackgroundService
                 "Extracted {TextLength} characters with confidence {Confidence:F2}", 
                 message.DocumentId, extractedText.Length, confidence);
 
-            // TODO: Send result back to result queue for database update
-            // This will be implemented when we add result processing
+            // Send result back to result queue for database update
+            await SendOcrResult(result, processingMethod);
             
         }
         catch (Exception ex)
@@ -199,12 +223,99 @@ public class OcrWorker : BackgroundService
             
             _logger.LogError(ex, "OCR processing failed for document {DocumentId}: {ErrorMessage}", 
                 message.DocumentId, ex.Message);
+
+            // Send error result back to result queue
+            await SendOcrResult(result, _documentProcessingService.GetProcessingMethod(message.FileName));
         }
 
         // For now, just log the result
         _logger.LogInformation("OCR Result for document {DocumentId}: Success={Success}, " +
             "TextLength={TextLength}, Confidence={Confidence:F2}", 
             result.DocumentId, result.Success, result.ExtractedText.Length, result.Confidence);
+    }
+
+    private async Task SendOcrResult(OcrResult ocrResult, string processingMethod)
+    {
+        try
+        {
+            var resultMessage = new OcrResultMessage
+            {
+                DocumentId = ocrResult.DocumentId,
+                CorrelationId = ocrResult.CorrelationId,
+                Success = ocrResult.Success,
+                ExtractedText = ocrResult.ExtractedText,
+                Confidence = ocrResult.Confidence,
+                ErrorMessage = ocrResult.ErrorMessage,
+                ProcessedAt = ocrResult.ProcessedAt,
+                ProcessingMethod = processingMethod
+            };
+
+            // Declare the OCR result queue
+            _channel!.QueueDeclare(
+                queue: "ocr_results",
+                durable: true,
+                exclusive: false,
+                autoDelete: false,
+                arguments: null);
+
+            var jsonMessage = JsonSerializer.Serialize(resultMessage);
+            var body = Encoding.UTF8.GetBytes(jsonMessage);
+
+            _channel.BasicPublish(
+                exchange: "",
+                routingKey: "ocr_results",
+                basicProperties: null,
+                body: body);
+
+            _logger.LogInformation("Sent OCR result for document {DocumentId} to result queue", ocrResult.DocumentId);
+
+            // If OCR was successful and we have extracted text, send to GenAI queue for summarization
+            if (ocrResult.Success && !string.IsNullOrWhiteSpace(ocrResult.ExtractedText))
+            {
+                await SendToGenAIQueue(ocrResult);
+            }
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Failed to send OCR result for document {DocumentId}", ocrResult.DocumentId);
+        }
+    }
+
+    private async Task SendToGenAIQueue(OcrResult ocrResult)
+    {
+        try
+        {
+            var genAIMessage = new GenAIMessage
+            {
+                DocumentId = ocrResult.DocumentId,
+                CorrelationId = ocrResult.CorrelationId,
+                ExtractedText = ocrResult.ExtractedText,
+                CreatedAt = DateTime.UtcNow
+            };
+
+            // Declare the GenAI queue
+            _channel!.QueueDeclare(
+                queue: "genai.queue",
+                durable: true,
+                exclusive: false,
+                autoDelete: false,
+                arguments: null);
+
+            var jsonMessage = JsonSerializer.Serialize(genAIMessage);
+            var body = Encoding.UTF8.GetBytes(jsonMessage);
+
+            _channel.BasicPublish(
+                exchange: "",
+                routingKey: "genai.queue",
+                basicProperties: null,
+                body: body);
+
+            _logger.LogInformation("Sent document {DocumentId} to GenAI queue for AI processing", ocrResult.DocumentId);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Failed to send document {DocumentId} to GenAI queue", ocrResult.DocumentId);
+        }
     }
 
     public override void Dispose()

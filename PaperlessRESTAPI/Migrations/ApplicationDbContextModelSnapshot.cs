@@ -37,6 +37,97 @@ namespace PaperlessRESTAPI.Migrations
                     b.ToTable("DocumentTags", (string)null);
                 });
 
+            modelBuilder.Entity("PaperlessRESTAPI.Data.Entities.BatchProcessingHistory", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("ErrorMessage")
+                        .HasMaxLength(2000)
+                        .HasColumnType("character varying(2000)");
+
+                    b.Property<string>("FileChecksum")
+                        .HasMaxLength(64)
+                        .HasColumnType("character varying(64)");
+
+                    b.Property<string>("FileName")
+                        .IsRequired()
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)");
+
+                    b.Property<string>("FilePath")
+                        .IsRequired()
+                        .HasMaxLength(1000)
+                        .HasColumnType("character varying(1000)");
+
+                    b.Property<long>("FileSizeBytes")
+                        .HasColumnType("bigint");
+
+                    b.Property<bool>("IsSuccessful")
+                        .HasColumnType("boolean");
+
+                    b.Property<DateTime>("ProcessedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<int>("RecordsProcessed")
+                        .HasColumnType("integer");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("FileName");
+
+                    b.HasIndex("IsSuccessful");
+
+                    b.HasIndex("ProcessedAt");
+
+                    b.ToTable("BatchProcessingHistories");
+                });
+
+            modelBuilder.Entity("PaperlessRESTAPI.Data.Entities.DailyDocumentAccess", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<DateOnly>("AccessDate")
+                        .HasColumnType("date");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<int>("DocumentId")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("DownloadCount")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("SearchCount")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("TotalAccess")
+                        .HasColumnType("integer");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<int>("ViewCount")
+                        .HasColumnType("integer");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("AccessDate");
+
+                    b.HasIndex("DocumentId", "AccessDate")
+                        .IsUnique();
+
+                    b.ToTable("DailyDocumentAccesses");
+                });
+
             modelBuilder.Entity("PaperlessRESTAPI.Data.Entities.Document", b =>
                 {
                     b.Property<int>("Id")
@@ -44,6 +135,19 @@ namespace PaperlessRESTAPI.Migrations
                         .HasColumnType("integer");
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("AIErrorMessage")
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)");
+
+                    b.Property<DateTime?>("AIProcessedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<float?>("Confidence")
+                        .HasColumnType("real");
+
+                    b.Property<string>("Content")
+                        .HasColumnType("text");
 
                     b.Property<string>("FileName")
                         .IsRequired()
@@ -63,6 +167,9 @@ namespace PaperlessRESTAPI.Migrations
                         .HasMaxLength(50)
                         .HasColumnType("character varying(50)");
 
+                    b.Property<bool>("IsAIProcessed")
+                        .HasColumnType("boolean");
+
                     b.Property<bool>("IsIndexed")
                         .HasColumnType("boolean");
 
@@ -71,9 +178,6 @@ namespace PaperlessRESTAPI.Migrations
 
                     b.Property<DateTime?>("LastModified")
                         .HasColumnType("timestamp with time zone");
-
-                    b.Property<string>("OcrText")
-                        .HasColumnType("text");
 
                     b.Property<string>("Summary")
                         .HasColumnType("text");
@@ -88,8 +192,7 @@ namespace PaperlessRESTAPI.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("FileName")
-                        .IsUnique();
+                    b.HasIndex("FileName");
 
                     b.HasIndex("IsIndexed");
 
@@ -138,6 +241,60 @@ namespace PaperlessRESTAPI.Migrations
                     b.ToTable("DocumentAccesses");
                 });
 
+            modelBuilder.Entity("PaperlessRESTAPI.Data.Entities.DocumentComment", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("AuthorName")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)");
+
+                    b.Property<string>("Content")
+                        .IsRequired()
+                        .HasMaxLength(2000)
+                        .HasColumnType("character varying(2000)");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<int>("DocumentId")
+                        .HasColumnType("integer");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("boolean");
+
+                    b.Property<bool>("IsEdited")
+                        .HasColumnType("boolean");
+
+                    b.Property<int?>("PageNumber")
+                        .HasColumnType("integer");
+
+                    b.Property<int?>("ParentCommentId")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("Position")
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("CreatedAt");
+
+                    b.HasIndex("DocumentId");
+
+                    b.HasIndex("ParentCommentId");
+
+                    b.ToTable("DocumentComments");
+                });
+
             modelBuilder.Entity("PaperlessRESTAPI.Data.Entities.Tag", b =>
                 {
                     b.Property<int>("Id")
@@ -160,6 +317,9 @@ namespace PaperlessRESTAPI.Migrations
                         .HasMaxLength(255)
                         .HasColumnType("character varying(255)");
 
+                    b.Property<bool>("IsAIGenerated")
+                        .HasColumnType("boolean");
+
                     b.Property<string>("Name")
                         .IsRequired()
                         .HasMaxLength(100)
@@ -177,40 +337,45 @@ namespace PaperlessRESTAPI.Migrations
                         {
                             Id = 1,
                             Color = "#dc3545",
-                            CreatedDate = new DateTime(2025, 9, 13, 13, 20, 11, 581, DateTimeKind.Utc).AddTicks(9830),
+                            CreatedDate = new DateTime(2025, 9, 15, 13, 42, 55, 149, DateTimeKind.Utc).AddTicks(7240),
                             Description = "Important documents",
+                            IsAIGenerated = false,
                             Name = "Important"
                         },
                         new
                         {
                             Id = 2,
                             Color = "#6c757d",
-                            CreatedDate = new DateTime(2025, 9, 13, 13, 20, 11, 581, DateTimeKind.Utc).AddTicks(9840),
+                            CreatedDate = new DateTime(2025, 9, 15, 13, 42, 55, 149, DateTimeKind.Utc).AddTicks(7240),
                             Description = "Archived documents",
+                            IsAIGenerated = false,
                             Name = "Archive"
                         },
                         new
                         {
                             Id = 3,
                             Color = "#28a745",
-                            CreatedDate = new DateTime(2025, 9, 13, 13, 20, 11, 581, DateTimeKind.Utc).AddTicks(9840),
+                            CreatedDate = new DateTime(2025, 9, 15, 13, 42, 55, 149, DateTimeKind.Utc).AddTicks(7250),
                             Description = "Invoice documents",
+                            IsAIGenerated = false,
                             Name = "Invoice"
                         },
                         new
                         {
                             Id = 4,
                             Color = "#007bff",
-                            CreatedDate = new DateTime(2025, 9, 13, 13, 20, 11, 581, DateTimeKind.Utc).AddTicks(9840),
+                            CreatedDate = new DateTime(2025, 9, 15, 13, 42, 55, 149, DateTimeKind.Utc).AddTicks(7250),
                             Description = "Contract documents",
+                            IsAIGenerated = false,
                             Name = "Contract"
                         },
                         new
                         {
                             Id = 5,
                             Color = "#fd7e14",
-                            CreatedDate = new DateTime(2025, 9, 13, 13, 20, 11, 581, DateTimeKind.Utc).AddTicks(9840),
+                            CreatedDate = new DateTime(2025, 9, 15, 13, 42, 55, 149, DateTimeKind.Utc).AddTicks(7250),
                             Description = "Report documents",
+                            IsAIGenerated = false,
                             Name = "Report"
                         });
                 });
@@ -230,6 +395,17 @@ namespace PaperlessRESTAPI.Migrations
                         .IsRequired();
                 });
 
+            modelBuilder.Entity("PaperlessRESTAPI.Data.Entities.DailyDocumentAccess", b =>
+                {
+                    b.HasOne("PaperlessRESTAPI.Data.Entities.Document", "Document")
+                        .WithMany()
+                        .HasForeignKey("DocumentId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Document");
+                });
+
             modelBuilder.Entity("PaperlessRESTAPI.Data.Entities.DocumentAccess", b =>
                 {
                     b.HasOne("PaperlessRESTAPI.Data.Entities.Document", "Document")
@@ -241,9 +417,34 @@ namespace PaperlessRESTAPI.Migrations
                     b.Navigation("Document");
                 });
 
+            modelBuilder.Entity("PaperlessRESTAPI.Data.Entities.DocumentComment", b =>
+                {
+                    b.HasOne("PaperlessRESTAPI.Data.Entities.Document", "Document")
+                        .WithMany("Comments")
+                        .HasForeignKey("DocumentId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("PaperlessRESTAPI.Data.Entities.DocumentComment", "ParentComment")
+                        .WithMany("Replies")
+                        .HasForeignKey("ParentCommentId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.Navigation("Document");
+
+                    b.Navigation("ParentComment");
+                });
+
             modelBuilder.Entity("PaperlessRESTAPI.Data.Entities.Document", b =>
                 {
                     b.Navigation("AccessLogs");
+
+                    b.Navigation("Comments");
+                });
+
+            modelBuilder.Entity("PaperlessRESTAPI.Data.Entities.DocumentComment", b =>
+                {
+                    b.Navigation("Replies");
                 });
 #pragma warning restore 612, 618
         }

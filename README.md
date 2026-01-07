@@ -1,52 +1,92 @@
-# Document Management System (DMS) - Sprint 2 Complete ✅
+# Document Management System (DMS)
 
 ## Project Overview
 
-A microservices-based Document Management System with automatic OCR, AI summarization, and full-text search capabilities.
+A complete microservices-based Document Management System w### Development Mode
 
-## Sprint 1 Achievements ✅
+For frontend development with hot reload:
 
-### 1. Project Structure Created
+```bash
+cd PaperlessWebUI
+npm install
+npm run dev
+```
 
-- ✅ **PaperlessRESTAPI** - .NET 8 Web API
-- ✅ **PaperlessServices** - .NET 8 Worker Services  
-- ✅ **PaperlessWebUI** - React + TypeScript Frontend (Vite)
+### Running Tests
 
-### 2. Database & Data Access Layer
+```bash
+# All tests (both API and Services)
+dotnet test
 
-- ✅ **PostgreSQL** integration with Entity Framework Core
-- ✅ **Repository Pattern** implementation
-- ✅ **Unit of Work** pattern for transaction management
-- ✅ **Database migrations** with seeded data
-- ✅ **Entities**: Document, Tag, DocumentAccess
-- ✅ **AutoMapper** for DTO mapping
+# API tests only
+cd PaperlessRESTAPI.Tests
+dotnet test
 
-### 3. REST API Implementation
+# Services tests only  
+cd PaperlessServices.Tests
+dotnet test
 
-- ✅ **DocumentsController** - Full CRUD operations
-- ✅ **TagsController** - Tag management
-- ✅ **Search functionality** - Text-based document search
-- ✅ **Input validation** with FluentValidation
-- ✅ **Exception handling** with proper HTTP status codes
-- ✅ **Swagger/OpenAPI** documentation
+# Run with coverage reporting
+dotnet test --collect:"XPlat Code Coverage"
+```
 
-### 4. Testing Infrastructure
+### OCR Processing
 
-- ✅ **Unit Tests** - 22 tests covering repositories and controllers
-- ✅ **Test Coverage** - Using Coverlet for code coverage
-- ✅ **Mocking** - With Moq framework
-- ✅ **In-Memory Database** - For isolated testing
+Upload documents through the Web UI or REST API to trigger automatic OCR processing:
 
-### 5. DevOps & Configuration
+1. **File Upload**: Documents are stored in MinIO object storage
+2. **Queue Processing**: OCR jobs are queued via RabbitMQ  
+3. **Text Extraction**: Tesseract OCR extracts text from images/PDFs
+4. **Search Integration**: Extracted text enables full-text search
+5. **Background Processing**: Services handle OCR asynchronouslyMinIO object storage, message queuing, and modern React frontend.
 
-- ✅ **Docker Compose** - PostgreSQL and Adminer setup
-- ✅ **CORS** configuration for React frontend
-- ✅ **Logging** - Structured logging with .NET built-in logger
-- ✅ **Health checks** - API health endpoint
+## 🚀 Sprint 4 Achievements ✅
 
-## Sprint 2 Achievements ✅
+### 1. OCR Integration with Tesseract 5.2.0
+- ✅ **Real OCR Processing** - Tesseract 5.2.0 integration for text extraction
+- ✅ **Multi-language Support** - English and Chinese text recognition
+- ✅ **PDF & Image Processing** - Support for PDF, PNG, JPG, TIFF formats
+- ✅ **Async Processing** - Background OCR worker with RabbitMQ messaging
+- ✅ **Error Handling** - Robust error handling and retry mechanisms
 
-### 1. React Frontend Development
+### 2. MinIO Object Storage
+- ✅ **File Storage** - MinIO 6.0.1 for scalable document storage
+- ✅ **Bucket Management** - Automatic bucket creation and organization
+- ✅ **Secure Access** - Pre-signed URLs for secure file access
+- ✅ **Health Monitoring** - Storage service health checks
+- ✅ **Docker Integration** - Containerized MinIO deployment
+
+### 3. Message Queue Architecture
+- ✅ **RabbitMQ Integration** - Reliable message passing between services
+- ✅ **OCR Queue** - Dedicated queue for OCR processing tasks
+- ✅ **GenAI Queue** - Ready for AI summarization features
+- ✅ **Indexing Queue** - For search index updates
+- ✅ **Connection Management** - Auto-recovery and health monitoring
+
+### 4. Enhanced Testing Suite
+- ✅ **67 Total Tests** - Comprehensive test coverage
+- ✅ **PaperlessRESTAPI.Tests** - 45 tests covering all API components
+- ✅ **PaperlessServices.Tests** - 22 tests for worker services
+- ✅ **Mock Services** - Isolated testing without external dependencies
+- ✅ **Code Coverage** - 20%+ coverage with detailed reporting
+- ✅ **Continuous Integration** - Ready for CI/CD pipelines
+
+### 5. Docker Orchestration
+- ✅ **Complete Stack** - All services containerized
+- ✅ **Health Checks** - Comprehensive health monitoring
+- ✅ **Service Dependencies** - Proper startup order and dependencies
+- ✅ **Volume Management** - Persistent storage for databases and files
+- ✅ **Network Isolation** - Secure inter-service communication
+
+## Previous Sprint Achievements
+
+### Sprint 1 ✅ - Foundation
+- Project structure, database, REST API, basic testing
+
+### Sprint 2 ✅ - Frontend  
+- React TypeScript frontend with modern UI components
+
+### Sprint 3 ✅ - Integration
 
 - ✅ **Modern React 18 + TypeScript** - Latest React with strict TypeScript
 - ✅ **Vite Build System** - Fast development and optimized production builds
@@ -89,8 +129,9 @@ A microservices-based Document Management System with automatic OCR, AI summariz
 ### Prerequisites
 
 - .NET 8.0 SDK
-- Docker Desktop
+- Docker Desktop  
 - Node.js 18+ (for frontend development)
+- Tesseract OCR 5.2.0 (included in Docker images)
 
 ### Running the Complete Application
 
@@ -100,14 +141,22 @@ A microservices-based Document Management System with automatic OCR, AI summariz
    docker-compose up --build
    ```
 
+   This will start:
+   - PostgreSQL Database with health checks
+   - MinIO Object Storage for document files
+   - RabbitMQ Message Queue for OCR processing
+   - REST API with OCR integration
+   - Background Services for async processing
+   - React Frontend with modern UI
+
 2. **Or Start Services Individually:**
 
    ```bash
-   # Start database
-   docker-compose up -d postgresql
+   # Start core infrastructure
+   docker-compose up -d postgresql minio rabbitmq
    
-   # Start API
-   docker-compose up -d paperless-api
+   # Start API services
+   docker-compose up -d paperless-api paperless-services
    
    # Start WebUI
    docker-compose up -d paperless-webui
@@ -120,6 +169,8 @@ A microservices-based Document Management System with automatic OCR, AI summariz
    - **API Documentation**: http://localhost:8081/swagger
    - **Health Check**: http://localhost:8081/health
    - **Database Admin**: http://localhost:9091 (Adminer)
+   - **MinIO Console**: http://localhost:9001 (admin/minioadmin)
+   - **RabbitMQ Management**: http://localhost:15672 (guest/guest)
 
 ### Development Mode
 
@@ -268,12 +319,3 @@ Docker Compose Services:
 ├── postgresql (Port 5432)        # Database
 └── adminer (Port 9091)           # DB Admin
 ```
-
----
-
-**Sprint 1 Status: ✅ COMPLETED**
-**Sprint 2 Status: ✅ COMPLETED**
-
-🎉 **Full-stack application successfully deployed and running!**
-
-Ready to proceed to Sprint 3: RabbitMQ & Async Processing!

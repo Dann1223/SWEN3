@@ -13,6 +13,8 @@ public class UnitOfWork : IUnitOfWork
     private IDocumentRepository? _documents;
     private IRepository<Entities.Tag>? _tags;
     private IRepository<Entities.DocumentAccess>? _documentAccesses;
+    private IDailyDocumentAccessRepository? _dailyDocumentAccesses;
+    private IBatchProcessingHistoryRepository? _batchProcessingHistories;
 
     public UnitOfWork(ApplicationDbContext context)
     {
@@ -27,6 +29,12 @@ public class UnitOfWork : IUnitOfWork
 
     public IRepository<Entities.DocumentAccess> DocumentAccesses =>
         _documentAccesses ??= new Repository<Entities.DocumentAccess>(_context);
+
+    public IDailyDocumentAccessRepository DailyDocumentAccesses =>
+        _dailyDocumentAccesses ??= new DailyDocumentAccessRepository(_context);
+
+    public IBatchProcessingHistoryRepository BatchProcessingHistories =>
+        _batchProcessingHistories ??= new BatchProcessingHistoryRepository(_context);
 
     public async Task<int> SaveChangesAsync()
     {

@@ -1,7 +1,11 @@
-import { Row, Col, Empty, Pagination } from 'antd';
+import { Row, Col, Empty, Pagination, Table, Tag, Button, Space, Typography } from 'antd';
+import { EyeOutlined, DownloadOutlined, DeleteOutlined } from '@ant-design/icons';
 import DocumentCard from './DocumentCard';
 import LoadingSpinner from '../common/LoadingSpinner';
+import { formatRelativeTime, formatFileSize, getFileTypeIcon } from '../../utils/helpers';
 import type { Document } from '../../types/document.types';
+
+const { Text } = Typography;
 
 interface DocumentListProps {
   documents: Document[];
@@ -51,8 +55,93 @@ const DocumentList = ({
           ))}
         </Row>
       ) : (
-        // List view would be implemented here with Table component
-        <div>List view not implemented yet</div>
+        <Table
+          dataSource={documents}
+          rowKey="id"
+          pagination={false}
+          columns={[
+            {
+              title: 'Document',
+              dataIndex: 'title',
+              key: 'title',
+              render: (title, record) => (
+                <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                  <span style={{ fontSize: 16 }}>{getFileTypeIcon(record.fileName)}</span>
+                  <div>
+                    <div>
+                      <Text strong>{title}</Text>
+                    </div>
+                    <div>
+                      <Text type="secondary" style={{ fontSize: 12 }}>
+                        {record.fileName}
+                      </Text>
+                    </div>
+                  </div>
+                </div>
+              ),
+            },
+            {
+              title: 'Size',
+              dataIndex: 'fileSize',
+              key: 'fileSize',
+              width: 100,
+              render: (size) => formatFileSize(size),
+            },
+            {
+              title: 'Status',
+              key: 'status',
+              width: 150,
+              render: (_, record) => (
+                <Space direction="vertical" size={2}>
+                  <Tag color={record.isProcessed ? 'green' : 'orange'} style={{ fontSize: 10 }}>
+                    {record.isProcessed ? 'Processed' : 'Processing'}
+                  </Tag>
+                  <Tag color={record.isIndexed ? 'green' : 'orange'} style={{ fontSize: 10 }}>
+                    {record.isIndexed ? 'Indexed' : 'Pending'}
+                  </Tag>
+                </Space>
+              ),
+            },
+            {
+              title: 'Upload Date',
+              dataIndex: 'uploadDate',
+              key: 'uploadDate',
+              width: 120,
+              render: (date) => formatRelativeTime(date),
+            },
+            {
+              title: 'Actions',
+              key: 'actions',
+              width: 120,
+              render: (_, record) => (
+                <Space>
+                  <Button 
+                    type="text" 
+                    size="small" 
+                    icon={<EyeOutlined />} 
+                    onClick={() => onView?.(record)}
+                    title="View"
+                  />
+                  <Button 
+                    type="text" 
+                    size="small" 
+                    icon={<DownloadOutlined />} 
+                    onClick={() => onDownload?.(record)}
+                    title="Download"
+                  />
+                  <Button 
+                    type="text" 
+                    size="small" 
+                    danger 
+                    icon={<DeleteOutlined />} 
+                    onClick={() => onDelete?.(record)}
+                    title="Delete"
+                  />
+                </Space>
+              ),
+            },
+          ]}
+        />
       )}
 
       {pagination && (

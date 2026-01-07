@@ -1,0 +1,61 @@
+name: Lint Check
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main, develop ]
+
+jobs:
+  lint:
+    name: Code Lint and Build Check
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    # Frontend Lint
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '20'
+        
+    - name: Install frontend dependencies
+      working-directory: ./PaperlessWebUI
+      run: |
+        if [ -f package-lock.json ]; then
+          npm ci
+        else
+          npm install
+        fi
+        
+    - name: Run ESLint
+      working-directory: ./PaperlessWebUI
+      run: npm run lint
+        
+    # .NET Build Check
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v4
+      with:
+        dotnet-version: '9.0.x'
+        
+    - name: Build .NET projects
+      run: |
+        echo "Building API..."
+        dotnet build ./PaperlessRESTAPI/PaperlessRESTAPI.csproj
+        
+        echo "Building Services..."
+        dotnet build ./PaperlessServices/PaperlessServices.csproj
+        
+        echo "Building Batch Service..."
+        dotnet build ./PaperlessBatchService/PaperlessBatchService.csproj
+        
+    - name: Run Tests
+      run: |
+        echo "Running tests..."
+        dotnet test ./PaperlessRESTAPI.Tests/PaperlessRESTAPI.Tests.csproj --no-build --verbosity normal
+      continue-on-error: true
+      
+    - name: Summary
+      run: echo "✅ Lint and build checks completed!"

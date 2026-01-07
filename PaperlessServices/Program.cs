@@ -33,10 +33,16 @@ builder.Services.Configure<TesseractConfig>(builder.Configuration.GetSection("Te
 
 // Register services
 builder.Services.AddScoped<IOcrService, TesseractOcrService>();
+builder.Services.AddScoped<IDocumentProcessingService, DocumentProcessingService>();
 builder.Services.AddScoped<IStorageService, MinIOService>();
+builder.Services.AddScoped<IGenAIService, GeminiAIService>();
+
+// Add HttpClient for GenAI service
+builder.Services.AddHttpClient<IGenAIService, GeminiAIService>();
 
 // Add hosted services
 builder.Services.AddHostedService<OcrWorker>();
+builder.Services.AddHostedService<GenAIWorker>();
 
 var host = builder.Build();
 

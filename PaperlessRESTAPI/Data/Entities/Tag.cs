@@ -22,6 +22,9 @@ public class Tag
 
     public DateTime CreatedDate { get; set; } = DateTime.UtcNow;
 
+    // AI Generation flag
+    public bool IsAIGenerated { get; set; } = false;
+
     // Navigation properties
     public virtual ICollection<Document> Documents { get; set; } = new List<Document>();
 }

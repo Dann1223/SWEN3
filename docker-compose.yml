@@ -35,6 +35,7 @@ services:
     environment:
       - ASPNETCORE_ENVIRONMENT=Development
       - ConnectionStrings__DefaultConnection=Host=postgresql;Database=paperless;Username=paperless;Password=paperless;Port=5432
+      - ConnectionStrings__Elasticsearch=http://elasticsearch:9200
       - RabbitMQ__HostName=rabbitmq
       - RabbitMQ__UserName=paperless
       - RabbitMQ__Password=paperless
@@ -51,6 +52,8 @@ services:
       rabbitmq:
         condition: service_healthy
       minio:
+        condition: service_healthy
+      elasticsearch:
         condition: service_healthy
     volumes:
       - ./uploads:/app/uploads
@@ -122,16 +125,62 @@ services:
       - MinIO__SecretKey=paperless123
       - MinIO__BucketName=documents
       - MinIO__UseSSL=false
+      - Elasticsearch__Uri=http://elasticsearch:9200
     depends_on:
       rabbitmq:
         condition: service_healthy
       minio:
         condition: service_healthy
+      elasticsearch:
+        condition: service_healthy
     volumes:
       - ./uploads:/app/uploads
+    restart: unless-stopped
+
+  # Elasticsearch for full-text search
+  elasticsearch:
+    image: docker.elastic.co/elasticsearch/elasticsearch:8.11.1
+    container_name: paperless-elasticsearch
+    environment:
+      - discovery.type=single-node
+      - xpack.security.enabled=false
+      - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
+    ports:
+      - "9200:9200"
+      - "9300:9300"
+    volumes:
+      - elasticsearch_data:/usr/share/elasticsearch/data
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:9200/_cluster/health || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+
+  # Batch Processing Service
+  paperless-batch:
+    build:
+      context: .
+      dockerfile: PaperlessBatchService/Dockerfile
+    container_name: paperless-batch
+    depends_on:
+      postgresql:
+        condition: service_healthy
+    environment:
+      - DOTNET_ENVIRONMENT=Production
+      - ConnectionStrings__DefaultConnection=Host=paperless-db;Port=5432;Database=paperless;Username=paperless;Password=paperless123
+    volumes:
+      - batch_input:/app/batch/input
+      - batch_archive:/app/batch/archive
+      - batch_error:/app/batch/error
+      - batch_logs:/app/logs
     restart: unless-stopped
 
 volumes:
   postgres_data:
   rabbitmq_data:
   minio_data:
+  elasticsearch_data:
+  batch_input:
+  batch_archive:
+  batch_error:
+  batch_logs:

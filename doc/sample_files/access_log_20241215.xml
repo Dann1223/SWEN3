@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<AccessLogReport version="1.0" date="2024-12-15" system="External-System-1">
+  
+  <!-- Document ID 1: Technical Report -->
+  <DocumentAccess documentId="1" fileName="technical_report_2024.pdf">
+    <ViewCount>15</ViewCount>
+    <DownloadCount>8</DownloadCount>
+    <SearchCount>3</SearchCount>
+    <TotalAccess>26</TotalAccess>
+    <AccessDetails>
+      <AccessDetail time="09:15:30" action="view" userAgent="Mozilla/5.0" ipAddress="192.168.1.100" />
+      <AccessDetail time="10:22:45" action="download" userAgent="Mozilla/5.0" ipAddress="192.168.1.101" />
+      <AccessDetail time="14:33:12" action="search" userAgent="Chrome/91.0" ipAddress="192.168.1.102" />
+    </AccessDetails>
+  </DocumentAccess>
+
+  <!-- Document ID 2: User Manual -->
+  <DocumentAccess documentId="2" fileName="user_manual_v2.pdf">
+    <ViewCount>28</ViewCount>
+    <DownloadCount>12</DownloadCount>
+    <SearchCount>5</SearchCount>
+    <TotalAccess>45</TotalAccess>
+    <AccessDetails>
+      <AccessDetail time="08:45:15" action="view" userAgent="Safari/14.0" ipAddress="192.168.1.103" />
+      <AccessDetail time="11:20:30" action="download" userAgent="Edge/91.0" ipAddress="192.168.1.104" />
+      <AccessDetail time="16:55:22" action="search" userAgent="Firefox/89.0" ipAddress="192.168.1.105" />
+    </AccessDetails>
+  </DocumentAccess>
+
+  <!-- Document ID 3: Financial Report -->
+  <DocumentAccess documentId="3" fileName="q3_financial_report.pdf">
+    <ViewCount>42</ViewCount>
+    <DownloadCount>18</DownloadCount>
+    <SearchCount>7</SearchCount>
+    <TotalAccess>67</TotalAccess>
+    <AccessDetails>
+      <AccessDetail time="07:30:00" action="view" userAgent="Mozilla/5.0" ipAddress="192.168.1.106" />
+      <AccessDetail time="12:15:45" action="download" userAgent="Chrome/91.0" ipAddress="192.168.1.107" />
+      <AccessDetail time="17:40:18" action="search" userAgent="Safari/14.0" ipAddress="192.168.1.108" />
+    </AccessDetails>
+  </DocumentAccess>
+
+  <!-- Document ID 4: Meeting Minutes -->
+  <DocumentAccess documentId="4" fileName="board_meeting_minutes.pdf">
+    <ViewCount>6</ViewCount>
+    <DownloadCount>2</DownloadCount>
+    <SearchCount>1</SearchCount>
+    <TotalAccess>9</TotalAccess>
+  </DocumentAccess>
+
+  <!-- Document ID 5: Policy Document -->
+  <DocumentAccess documentId="5" fileName="company_policy_2024.pdf">
+    <ViewCount>33</ViewCount>
+    <DownloadCount>15</DownloadCount>
+    <SearchCount>8</SearchCount>
+    <TotalAccess>56</TotalAccess>
+  </DocumentAccess>
+
+</AccessLogReport>

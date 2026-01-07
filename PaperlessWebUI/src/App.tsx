@@ -6,8 +6,11 @@ import MainLayout from './components/Layout/MainLayout';
 import ErrorBoundary from './components/common/ErrorBoundary';
 import Dashboard from './pages/Dashboard';
 import DocumentsPage from './pages/DocumentsPage';
+import DocumentDetailPage from './pages/DocumentDetailPage';
 import UploadPage from './pages/UploadPage';
 import SearchPage from './pages/SearchPage';
+import AdvancedSearchPage from './pages/AdvancedSearchPage';
+import TagsPage from './pages/TagsPage';
 
 function App() {
   return (
@@ -25,8 +28,11 @@ function App() {
               <Routes>
                 <Route path="/" element={<Dashboard />} />
                 <Route path="/documents" element={<DocumentsPage />} />
+                <Route path="/documents/:id" element={<DocumentDetailPage />} />
                 <Route path="/upload" element={<UploadPage />} />
                 <Route path="/search" element={<SearchPage />} />
+                <Route path="/advanced-search" element={<AdvancedSearchPage />} />
+                <Route path="/tags" element={<TagsPage />} />
               </Routes>
             </MainLayout>
           </Router>

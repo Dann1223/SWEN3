@@ -34,7 +34,7 @@ public class Document
     public long FileSize { get; set; }
 
     [Column(TypeName = "text")]
-    public string? OcrText { get; set; }
+    public string? Content { get; set; }
 
     [Column(TypeName = "text")]
     public string? Summary { get; set; }
@@ -43,7 +43,18 @@ public class Document
 
     public bool IsIndexed { get; set; } = false;
 
+    // AI Processing fields
+    public bool IsAIProcessed { get; set; } = false;
+    
+    public DateTime? AIProcessedAt { get; set; }
+    
+    [MaxLength(500)]
+    public string? AIErrorMessage { get; set; }
+
+    public float? Confidence { get; set; }
+
     // Navigation properties
     public virtual ICollection<Tag> Tags { get; set; } = new List<Tag>();
     public virtual ICollection<DocumentAccess> AccessLogs { get; set; } = new List<DocumentAccess>();
+    public virtual ICollection<DocumentComment> Comments { get; set; } = new List<DocumentComment>();
 }

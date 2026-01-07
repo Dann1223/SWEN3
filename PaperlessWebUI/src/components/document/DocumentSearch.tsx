@@ -1,16 +1,14 @@
-import { Input, Select, Button, Space } from 'antd';
-import { SearchOutlined, ClearOutlined } from '@ant-design/icons';
+import { Input, Button, Space } from 'antd';
+import { SearchOutlined } from '@ant-design/icons';
 
 const { Search } = Input;
-const { Option } = Select;
 
 interface DocumentSearchProps {
   onSearch: (query: string) => void;
-  onFilterChange?: (filters: any) => void;
   loading?: boolean;
 }
 
-const DocumentSearch = ({ onSearch, onFilterChange, loading }: DocumentSearchProps) => {
+const DocumentSearch = ({ onSearch, loading }: DocumentSearchProps) => {
   return (
     <Space direction="vertical" size="middle" style={{ width: '100%' }}>
       <Search
@@ -22,37 +20,14 @@ const DocumentSearch = ({ onSearch, onFilterChange, loading }: DocumentSearchPro
         loading={loading}
       />
       
-      <Space wrap>
-        <Select
-          placeholder="File Type"
-          style={{ width: 120 }}
-          allowClear
-          onChange={(value) => onFilterChange?.({ fileType: value })}
-        >
-          <Option value="pdf">PDF</Option>
-          <Option value="doc">Word</Option>
-          <Option value="image">Image</Option>
-          <Option value="text">Text</Option>
-        </Select>
-
-        <Select
-          placeholder="Sort By"
-          style={{ width: 120 }}
-          defaultValue="uploadDate"
-          onChange={(value) => onFilterChange?.({ sortBy: value })}
-        >
-          <Option value="uploadDate">Date</Option>
-          <Option value="title">Title</Option>
-          <Option value="fileSize">Size</Option>
-        </Select>
-
+      <div style={{ textAlign: 'center' }}>
         <Button 
-          icon={<ClearOutlined />}
-          onClick={() => onFilterChange?.({})}
+          type="link" 
+          onClick={() => window.open('/search', '_blank')}
         >
-          Clear Filters
+          Advanced Search
         </Button>
-      </Space>
+      </div>
     </Space>
   );
 };

@@ -43,11 +43,7 @@ export const useSearch = () => {
       dispatch(setIsSearching(true));
       
       try {
-        await dispatch(searchDocuments({
-          ...searchParams,
-          page: 1,
-          pageSize: 20,
-        }));
+        await dispatch(searchDocuments(searchParams.query || ''));
         
         // Add to search history
         if (searchParams.query) {

@@ -1,25 +1,31 @@
 {
   "format": 1,
   "restore": {
-    "/Users/horse/Desktop/L3814DMS/PaperlessServices/PaperlessServices.csproj": {}
+    "C:\\Users\\Liu\\Desktop\\SOFT3\\dms-main\\dms-main\\PaperlessServices\\PaperlessServices.csproj": {}
   },
   "projects": {
-    "/Users/horse/Desktop/L3814DMS/PaperlessServices/PaperlessServices.csproj": {
+    "C:\\Users\\Liu\\Desktop\\SOFT3\\dms-main\\dms-main\\PaperlessServices\\PaperlessServices.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "/Users/horse/Desktop/L3814DMS/PaperlessServices/PaperlessServices.csproj",
+        "projectUniqueName": "C:\\Users\\Liu\\Desktop\\SOFT3\\dms-main\\dms-main\\PaperlessServices\\PaperlessServices.csproj",
         "projectName": "PaperlessServices",
-        "projectPath": "/Users/horse/Desktop/L3814DMS/PaperlessServices/PaperlessServices.csproj",
-        "packagesPath": "/Users/horse/.nuget/packages/",
-        "outputPath": "/Users/horse/Desktop/L3814DMS/PaperlessServices/obj/",
+        "projectPath": "C:\\Users\\Liu\\Desktop\\SOFT3\\dms-main\\dms-main\\PaperlessServices\\PaperlessServices.csproj",
+        "packagesPath": "C:\\Users\\Liu\\.nuget\\packages\\",
+        "outputPath": "C:\\Users\\Liu\\Desktop\\SOFT3\\dms-main\\dms-main\\PaperlessServices\\obj\\",
         "projectStyle": "PackageReference",
+        "fallbackFolders": [
+          "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
+        ],
         "configFilePaths": [
-          "/Users/horse/.nuget/NuGet/NuGet.Config"
+          "C:\\Users\\Liu\\AppData\\Roaming\\NuGet\\NuGet.Config",
+          "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.FallbackLocation.config",
+          "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config"
         ],
         "originalTargetFrameworks": [
           "net9.0"
         ],
         "sources": {
+          "C:\\Program Files (x86)\\Microsoft SDKs\\NuGetPackages\\": {},
           "https://api.nuget.org/v3/index.json": {}
         },
         "frameworks": {
@@ -47,6 +53,58 @@
             "Microsoft.Extensions.Hosting": {
               "target": "Package",
               "version": "[9.0.6, )"
+            },
+            "Microsoft.Extensions.Http": {
+              "target": "Package",
+              "version": "[9.0.9, )"
+            },
+            "Microsoft.Extensions.Logging": {
+              "target": "Package",
+              "version": "[9.0.9, )"
+            },
+            "Minio": {
+              "target": "Package",
+              "version": "[6.0.1, )"
+            },
+            "PDFtoImage": {
+              "target": "Package",
+              "version": "[5.0.0, )"
+            },
+            "RabbitMQ.Client": {
+              "target": "Package",
+              "version": "[6.8.1, )"
+            },
+            "Serilog.Extensions.Hosting": {
+              "target": "Package",
+              "version": "[8.0.0, )"
+            },
+            "Serilog.Sinks.Console": {
+              "target": "Package",
+              "version": "[6.0.0, )"
+            },
+            "Serilog.Sinks.File": {
+              "target": "Package",
+              "version": "[6.0.0, )"
+            },
+            "SkiaSharp": {
+              "target": "Package",
+              "version": "[3.116.1, )"
+            },
+            "SkiaSharp.NativeAssets.Linux": {
+              "target": "Package",
+              "version": "[3.116.1, )"
+            },
+            "System.Text.Json": {
+              "target": "Package",
+              "version": "[9.0.6, )"
+            },
+            "Tesseract": {
+              "target": "Package",
+              "version": "[5.2.0, )"
+            },
+            "iText7": {
+              "target": "Package",
+              "version": "[8.0.2, )"
             }
           },
           "imports": [
@@ -65,7 +123,7 @@
               "privateAssets": "all"
             }
           },
-          "runtimeIdentifierGraphPath": "/usr/local/share/dotnet/sdk/9.0.301/PortableRuntimeIdentifierGraph.json"
+          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\9.0.306/PortableRuntimeIdentifierGraph.json"
         }
       }
     }

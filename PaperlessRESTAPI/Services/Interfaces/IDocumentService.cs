@@ -13,4 +13,5 @@ public interface IDocumentService
     Task<bool> DeleteDocumentAsync(int id);
     Task<IEnumerable<DocumentDto>> SearchDocumentsAsync(string searchTerm);
     Task<IEnumerable<DocumentDto>> GetRecentDocumentsAsync(int count = 10);
+    Task<Stream?> GetFileStreamAsync(int documentId);
 }

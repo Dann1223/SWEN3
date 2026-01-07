@@ -5,8 +5,10 @@ import { useNavigate } from 'react-router-dom';
 import { useSelector, useDispatch } from 'react-redux';
 import type { RootState, AppDispatch } from '../store';
 import { fetchDocuments, deleteDocument } from '../store/slices/documentSlice';
+import { documentService } from '../services/documentService';
 import DocumentList from '../components/document/DocumentList';
 import DocumentSearch from '../components/document/DocumentSearch';
+import IndexManagement from '../components/search/IndexManagement';
 import type { Document } from '../types/document.types';
 
 const { Title } = Typography;
@@ -30,22 +32,42 @@ const DocumentsPage = () => {
     }
   };
 
-  const handleDownload = (doc: Document) => {
-    message.info(`Download ${doc.fileName} - Feature coming soon`);
+  const handleDownload = async (doc: Document) => {
+    try {
+      const blob = await documentService.download(doc.id);
+      const url = window.URL.createObjectURL(blob);
+      const link = window.document.createElement('a');
+      link.href = url;
+      link.download = doc.fileName;
+      window.document.body.appendChild(link);
+      link.click();
+      window.URL.revokeObjectURL(url);
+      window.document.body.removeChild(link);
+      message.success('Download started');
+    } catch (error) {
+      console.error('Download failed:', error);
+      message.error('Download failed');
+    }
   };
 
   const handleView = (doc: Document) => {
-    message.info(`View ${doc.title} - Feature coming soon`);
+    navigate(`/documents/${doc.id}`);
   };
 
   const handleSearch = (query: string) => {
-    // This will be implemented with the search functionality
-    console.log('Search:', query);
+    // Simple search - just filter by title locally for now
+    if (!query.trim()) {
+      dispatch(fetchDocuments({ page: 1, pageSize: 10 }));
+      return;
+    }
+    
+    // Navigate to advanced search with query
+    navigate(`/search?q=${encodeURIComponent(query)}`);
   };
 
-  const handleFilterChange = (filters: any) => {
-    // This will be implemented with filter functionality
-    console.log('Filters:', filters);
+  const handleIndexChanged = () => {
+    // Refresh documents when index changes
+    dispatch(fetchDocuments({ page: pagination.page, pageSize: pagination.pageSize }));
   };
 
   return (
@@ -74,10 +96,11 @@ const DocumentsPage = () => {
         </Space>
       </div>
 
+      <IndexManagement onIndexChanged={handleIndexChanged} />
+
       <div style={{ marginBottom: 24 }}>
         <DocumentSearch
           onSearch={handleSearch}
-          onFilterChange={handleFilterChange}
           loading={loading}
         />
       </div>

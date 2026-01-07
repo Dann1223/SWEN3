@@ -4,14 +4,19 @@ import type {
   Tag, 
   UpdateDocumentRequest,
   DocumentUploadResponse,
-  DocumentSearchResult 
+  DocumentSearchResult,
+  PaginatedResult
 } from '../types/document.types';
-import type { SearchRequest } from '../types/search.types';
 
 export const documentService = {
   // Get all documents with pagination
-  async getAll(page = 1, pageSize = 10): Promise<Document[]> {
-    return apiClient.get(`/api/documents?page=${page}&pageSize=${pageSize}`);
+  async getAll(page = 1, pageSize = 10): Promise<{ documents: Document[], totalCount: number, totalPages: number }> {
+    const response = await apiClient.get(`/api/documents?page=${page}&pageSize=${pageSize}`) as PaginatedResult<Document>;
+    return {
+      documents: response.items || [],
+      totalCount: response.totalCount || 0,
+      totalPages: response.totalPages || 0
+    };
   },
 
   // Get document by ID
@@ -28,7 +33,9 @@ export const documentService = {
   ): Promise<DocumentUploadResponse> {
     const formData = new FormData();
     formData.append('file', file);
-    if (title) formData.append('title', title);
+    // Always send title, use filename without extension as default
+    const finalTitle = title?.trim() || file.name.replace(/\.[^/.]+$/, "");
+    formData.append('title', finalTitle);
     if (tagIds?.length) {
       tagIds.forEach(tagId => formData.append('tagIds', tagId.toString()));
     }
@@ -46,24 +53,9 @@ export const documentService = {
     return apiClient.delete(`/api/documents/${id}`);
   },
 
-  // Search documents
-  async search(request: SearchRequest): Promise<DocumentSearchResult> {
-    const params = new URLSearchParams();
-    
-    if (request.query) params.append('query', request.query);
-    if (request.page) params.append('page', request.page.toString());
-    if (request.pageSize) params.append('pageSize', request.pageSize.toString());
-    if (request.fileType) params.append('fileType', request.fileType);
-    if (request.dateFrom) params.append('dateFrom', request.dateFrom);
-    if (request.dateTo) params.append('dateTo', request.dateTo);
-    if (request.sortBy) params.append('sortBy', request.sortBy);
-    if (request.sortOrder) params.append('sortOrder', request.sortOrder);
-    
-    if (request.tagIds?.length) {
-      request.tagIds.forEach(tagId => params.append('tagIds', tagId.toString()));
-    }
-
-    return apiClient.get(`/api/documents/search?${params.toString()}`);
+  // Search documents (using the basic search endpoint)
+  async search(query: string): Promise<DocumentSearchResult> {
+    return apiClient.get(`/api/documents/search?query=${encodeURIComponent(query)}`);
   },
 
   // Get recent documents
@@ -75,6 +67,16 @@ export const documentService = {
   async download(id: number): Promise<Blob> {
     const response = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:8081'}/api/documents/${id}/download`);
     return response.blob();
+  },
+
+  // Get OCR processing status
+  async getOcrStatus(id: number): Promise<any> {
+    return apiClient.get(`/api/documents/${id}/ocr-status`);
+  },
+
+  // Get OCR text
+  async getOcrText(id: number): Promise<any> {
+    return apiClient.get(`/api/documents/${id}/ocr-text`);
   }
 };
 
