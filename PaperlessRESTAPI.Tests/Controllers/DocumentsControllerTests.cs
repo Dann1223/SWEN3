@@ -20,8 +20,11 @@ public class DocumentsControllerTests
     private readonly Mock<IUnitOfWork> _mockUnitOfWork;
     private readonly Mock<IDocumentRepository> _mockDocumentRepository;
     private readonly Mock<IRepository<Tag>> _mockTagRepository;
+
     private readonly Mock<IDocumentService> _mockDocumentService;
+    private readonly Mock<IOcrResultService> _mockOcrResultService;
     private readonly Mock<ILogger<DocumentsController>> _mockLogger;
+
     private readonly IMapper _mapper;
     private readonly DocumentsController _controller;
 
@@ -30,7 +33,9 @@ public class DocumentsControllerTests
         _mockUnitOfWork = new Mock<IUnitOfWork>();
         _mockDocumentRepository = new Mock<IDocumentRepository>();
         _mockTagRepository = new Mock<IRepository<Tag>>();
+
         _mockDocumentService = new Mock<IDocumentService>();
+        _mockOcrResultService = new Mock<IOcrResultService>();
         _mockLogger = new Mock<ILogger<DocumentsController>>();
 
         // Setup AutoMapper
@@ -41,7 +46,14 @@ public class DocumentsControllerTests
         _mockUnitOfWork.Setup(u => u.Documents).Returns(_mockDocumentRepository.Object);
         _mockUnitOfWork.Setup(u => u.Tags).Returns(_mockTagRepository.Object);
 
-        _controller = new DocumentsController(_mockUnitOfWork.Object, _mockDocumentService.Object, _mapper, _mockLogger.Object);
+        
+        _controller = new DocumentsController(
+            _mockUnitOfWork.Object,
+            _mockDocumentService.Object,
+            _mockOcrResultService.Object,
+            _mapper,
+            _mockLogger.Object
+        );
     }
 
     [Fact]

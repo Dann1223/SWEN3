@@ -74,7 +74,7 @@ public class DocumentRepositoryTests : TestBase
     }
 
     [Fact]
-    public async Task SearchByTextAsync_WithMatchingOcrText_ShouldReturnDocuments()
+    public async Task SearchByTextAsync_WithMatchingContent_ShouldReturnDocuments()
     {
         // Arrange
         await SeedTestDataAsync();
@@ -84,7 +84,8 @@ public class DocumentRepositoryTests : TestBase
 
         // Assert
         documents.Should().HaveCount(1);
-        documents.First().OcrText.Should().Contain("OCR");
+        documents.First().Content.Should().NotBeNull();
+        documents.First().Content!.Should().Contain("OCR");
     }
 
     [Fact]

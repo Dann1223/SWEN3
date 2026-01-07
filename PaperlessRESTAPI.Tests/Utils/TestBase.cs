@@ -65,7 +65,8 @@ public abstract class TestBase : IDisposable
 
         var doc1 = CreateTestDocument("First Document", "first.pdf");
         var doc2 = CreateTestDocument("Second Document", "second.pdf");
-        doc2.OcrText = "This is OCR text content";
+
+        doc2.Content = "This is OCR text content";
         doc2.Summary = "This is a summary";
         doc2.IsProcessed = true;
 
@@ -76,7 +77,7 @@ public abstract class TestBase : IDisposable
         // Add tags to documents
         doc1.Tags.Add(tag1);
         doc2.Tags.Add(tag2);
-        
+
         await Context.SaveChangesAsync();
     }
 
